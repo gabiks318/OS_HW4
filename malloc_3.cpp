@@ -555,7 +555,7 @@ void *srealloc(void *oldp, size_t size) {
         }
         sbrk(size - old_block->size);
         old_block->size = size;
-        return old_block + sizeof(MMD);
+        return (char*)old_block + sizeof(MMD);
     }
 
     // Find block if available
