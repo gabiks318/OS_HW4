@@ -5,7 +5,7 @@
 #define MAX_SIZE 100000000
 #define HIST_MAX 128
 #define MIN_GAP 128
-#define ALLIGN 4
+#define ALLIGN 8
 enum merge {
     MergeLeft, MergeRight, MergeBoth
 };
@@ -406,11 +406,11 @@ void *smalloc(size_t size) {
 }
 
 void *scalloc(size_t num, size_t size) {
-    size = (size % ALLIGN != 0) ? (size + (ALLIGN - size % ALLIGN)) : size;
-    void *p = smalloc(num * size);
+    size_t total_size = (size*num % ALLIGN != 0) ? (size*num + (ALLIGN - size*num % ALLIGN)) : size*num;
+    void *p = smalloc(total_size);
     if (p == NULL)
         return NULL;
-    memset(p, 0, num * size);
+    memset(p, 0, total_size);
     return p;
 }
 
