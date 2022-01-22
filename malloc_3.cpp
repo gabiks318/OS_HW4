@@ -224,8 +224,13 @@ void BlockList::splitBlock(MMD *block, size_t size) {
     new_block->prev = block;
     block->next = new_block;
 
-    if (new_block->next)
+    if (new_block->next){
         new_block->next->prev = new_block;
+        if(new_block->next->is_free){
+            mergeBlock(new_block, MergeRight);
+        }
+    }
+
 
 
     // insert to histogram
@@ -462,9 +467,15 @@ void *srealloc(void *oldp, size_t size) {
             new_block->prev = prev_block;
             new_block->next = old_block->next;
             prev_block->next = new_block;
-            if (new_block->next)
+            if (new_block->next){
                 new_block->next->prev = new_block;
+                if(new_block->next->is_free){
+                    bl.mergeBlock(new_block, MergeRight);
+                }
+            }
+
             bl.addBlockToHist(new_block);
+
             return newp;
         } else {
             bl.removeBlockFromHist(prev_block);
@@ -490,8 +501,13 @@ void *srealloc(void *oldp, size_t size) {
             new_block->prev = next_block->prev;
             new_block->next = next_block->next;
             old_block->next = new_block;
-            if (new_block->next)
+            if (new_block->next){
                 new_block->next->prev = new_block;
+                if(new_block->next->is_free){
+                    bl.mergeBlock(new_block, MergeRight);
+                }
+            }
+
             bl.addBlockToHist(new_block);
             void *newp = (char *) old_block + sizeof(MMD);
             return newp;
@@ -525,8 +541,13 @@ void *srealloc(void *oldp, size_t size) {
             new_block->prev = prev_block;
             new_block->next = next_block->next;
             prev_block->next = new_block;
-            if (new_block->next)
+            if (new_block->next){
                 new_block->next->prev = new_block;
+                if(new_block->next->is_free){
+                    bl.mergeBlock(new_block, MergeRight);
+                }
+            }
+
             bl.addBlockToHist(new_block);
             void *newp = (char *) prev_block + sizeof(MMD);
             return newp;
@@ -551,6 +572,7 @@ void *srealloc(void *oldp, size_t size) {
             prev_block->is_free = false;
             prev_block->size = prev_block->size + old_block->size + sizeof(MMD);
             memcpy((char *) prev_block + sizeof(MMD), oldp, old_block->size);
+            bl.removeBlock(old_block);
             old_block = prev_block;
         }
         sbrk(size - old_block->size);
